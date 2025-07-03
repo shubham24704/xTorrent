@@ -8,25 +8,65 @@
 
 using json = nlohmann::json;
 
+json decode_bencoded_value(const std::string& encoded_value, size_t &index);
+
+json decode_bencoded_integer(const std::string& encoded_value, size_t &index){
+    index++;
+    size_t start = index;
+    while(encoded_value[index]!='e') index++;
+    size_t length = index - start;
+    index++;
+    return json(std::stoll(encoded_value.substr(start,length)));
+}
+
+json decode_bencoded_string(const std::string& encoded_value, size_t &index){
+    std::string number = "";
+    while(encoded_value[index] != ':'){
+        number += encoded_value[index];
+        index++;
+    }
+    index++;
+    size_t length = std::stoll(number);
+    std:: string result = "";
+    while(length--){
+        result += encoded_value[index];
+        index++;
+    }
+    return json(result);
+}
+
+json decode_bencoded_list(const std::string& encoded_value, size_t &index){
+    index++;
+    json result = json::array();
+    while(encoded_value[index] != 'e'){
+        result.push_back(decode_bencoded_value(encoded_value,index));
+    }
+    index++;
+    return json(result);
+}
+
+json decode_bencoded_value(const std::string& encoded_value, size_t &index){
+    if(std::isdigit(encoded_value[index])){
+        return decode_bencoded_string(encoded_value,index);
+    }
+    else if(encoded_value[index] == 'i'){
+        return decode_bencoded_integer(encoded_value,index);
+    }
+    else if(encoded_value[index] == 'l'){
+        return decode_bencoded_list(encoded_value,index);
+    }
+    else{
+        throw std::runtime_error("Incorrect encoded value: " + encoded_value);
+    }
+}
+
 json decode_bencoded_value(const std::string& encoded_value) {
-    if (std::isdigit(encoded_value[0])) {
-        // Example: "5:hello" -> "hello"
-        size_t colon_index = encoded_value.find(':');
-        if (colon_index != std::string::npos) {
-            std::string number_string = encoded_value.substr(0, colon_index);
-            int64_t number = std::atoll(number_string.c_str());
-            std::string str = encoded_value.substr(colon_index + 1, number);
-            return json(str);
-        } else {
-            throw std::runtime_error("Invalid encoded value: " + encoded_value);
-        }
+    size_t index = 0;
+    json result = decode_bencoded_value(encoded_value,index);
+    if(index!=encoded_value.size()){
+        throw std::runtime_error("Input string has extra characters");
     }
-    else if (encoded_value[0] == 'i' && encoded_value.back() == 'e') {
-        return json(std::stoll(encoded_value.substr(1, encoded_value.size() - 2)));
-    }
-    else {
-        throw std::runtime_error("Unhandled encoded value: " + encoded_value);
-    }
+    return result;
 }
 
 int main(int argc, char* argv[]) {
