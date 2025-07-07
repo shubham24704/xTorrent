@@ -47,6 +47,15 @@ add_executable(test_bencode
     ${SRC_DIR}/bencode.cpp
 )
 
+# ----------------------------
+# Bencode test executable
+# ----------------------------
+add_executable(test_torrent_parser
+    test/test_torrent_parser.cpp
+    src/torrent_parser.cpp
+    src/bencode.cpp
+)
+
 target_include_directories(test_bencode PRIVATE ${SRC_DIR} ${LIB_DIR})
 target_link_libraries(test_bencode PRIVATE OpenSSL::Crypto)
 
