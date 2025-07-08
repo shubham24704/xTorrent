@@ -31,6 +31,7 @@ set(SOURCE_FILES
 add_executable(bittorrent ${SOURCE_FILES})
 
 # Include headers
+include_directories(${PROJECT_SOURCE_DIR}/lib)
 target_include_directories(bittorrent PRIVATE
     ${SRC_DIR}
     ${LIB_DIR}

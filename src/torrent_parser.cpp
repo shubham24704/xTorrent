@@ -32,9 +32,27 @@ TorrentFile parseTorrentFile(const std::string& filepath) {
     TorrentFile tf;
     tf.announce = data["announce"];
     auto info = data["info"];
+
     tf.name = info["name"];
     tf.piece_length = info["piece length"];
-    tf.length = info["length"];
+
+    // 👇 Add debug print before accessing 'length'
+    std::cout << "Length field raw: " << info["length"] << std::endl;
+
+    // 🔒 Only set length if it's a single-file torrent
+    if (info.contains("length")) {
+        try {
+            tf.length = info["length"].get<int64_t>();
+            std::cout << "Length field raw: " << tf.length << std::endl;
+        } catch (const std::exception& e) {
+            std::cout << "Invalid length value: " << e.what() << std::endl;
+            tf.length = 0;
+        }
+    } else {
+        std::cout << "Length key not found.\n";
+        tf.length = 0;
+    }
+
     tf.pieces = extractPieces(info["pieces"]);
 
     return tf;

@@ -8,8 +8,8 @@
 struct TorrentFile {
     std::string announce;
     std::string name;
-    int piece_length;
-    int length; // for single file torrents
+    int64_t piece_length;
+    int64_t length; // for single file torrents
     std::vector<std::string> pieces; // hex-encoded SHA1 hashes
 };
 
